@@ -1,4 +1,6 @@
-export default class UndertaleSFX extends Plugin
+const fs = require('fs');
+
+export default class UndertaleSFX
 {
 	/*
 	[Field Variables]
@@ -6,36 +8,20 @@ export default class UndertaleSFX extends Plugin
 	- beepSound (Object): The ig.Sound object used for the beep.
 	This code is super ghetto compared to the Voice Mod. Refer to that and the comments there.
 	*/
-	
+
 	constructor(mod)
 	{
-		super(mod);
-		this.fs = require('fs');
-		this.path = require('path');
-		this.MOD_NAME = mod.name;
-		this.BASE_DIR = mod.baseDirectory;
-		this.RELATIVE_DIR = this.BASE_DIR.substring(7); // Gets rid of "assets/".
-		this.VOICE_DIR = 'vc/';
-		this.CONFIG_FILE = 'config.json';
-		
-		const CONFIG_DIR = 'assets/mods/config/' + this.MOD_NAME + '/';
-		
-		if(this.fs.existsSync(CONFIG_DIR))
-		{
-			this.BASE_DIR = CONFIG_DIR;
-			this.RELATIVE_DIR = CONFIG_DIR.substring(7);
-		}
+		const modConfigDir = `assets/mods/config/${mod.name}/`;
+		const modBaseDir = fs.existsSync(modConfigDir) ? modConfigDir : mod.baseDirectory;
+		this.configURL = `/${modBaseDir}config.json`;
+		this.voiceBaseURL = `/${modBaseDir}vc/`;
 	}
-	
-	async preload() {}
-	async postload() {}
-	async prestart() {}
-	
-	async main()
+
+	async prestart()
 	{
-		this.BEEPS = await simplify.resources.loadJSON(this.RELATIVE_DIR + this.CONFIG_FILE);
+		this.BEEPS = await ccmod3.resources.loadJSON(this.configURL);
 		const self = this;
-		
+
 		ig.EVENT_STEP.SHOW_MSG.inject({
 			beepSound: null,
 			init: function()
@@ -49,7 +35,7 @@ export default class UndertaleSFX extends Plugin
 				this.parent(...arguments);
 			}
 		});
-		
+
 		ig.MessageOverlayGui.Entry.inject({
 			addMessage: function()
 			{
@@ -58,7 +44,7 @@ export default class UndertaleSFX extends Plugin
 				return this.parent(...arguments);
 			}
 		});
-		
+
 		sc.TextGui.inject({
 			update: function()
 			{
@@ -68,39 +54,39 @@ export default class UndertaleSFX extends Plugin
 			}
 		});
 	}
-	
+
 	_getBeepSound(character, expression)
 	{
 		var Z = this.BEEPS[character];
 		var sound = Z ? (Z[expression] || Z['DEFAULT']) : null;
 		var list;
-		
+
 		// Special Cases //
 		if(sound === 'mettaton')
 		{
 			list = [];
-			
+
 			for(var i = 0; i < 9; i++)
-				list[i] = new ig.Sound(this.RELATIVE_DIR + this.VOICE_DIR + 'mettaton-' + (i+1) + '.ogg');
+				list[i] = new ig.Sound(`${this.voiceBaseURL}mettaton-${i+1}.ogg`);
 		}
 		else if(sound === 'temmie')
 		{
 			list = [];
-			
+
 			for(var i = 0; i < 6; i++)
-				list[i] = new ig.Sound(this.RELATIVE_DIR + this.VOICE_DIR + 'mettaton-' + (i+1) + '.ogg');
+				list[i] = new ig.Sound(`${this.voiceBaseURL}temmie-${i+1}.ogg`);
 		}
 		else if(sound === 'gaster')
 		{
 			list = [];
-			
+
 			for(var i = 0; i < 7; i++)
-				list[i] = new ig.Sound(this.RELATIVE_DIR + this.VOICE_DIR + 'mettaton-' + (i+1) + '.ogg');
+				list[i] = new ig.Sound(`${this.voiceBaseURL}gaster-${i+1}.ogg`);
 		}
-		
-		return list || (sound ? new ig.Sound(this.RELATIVE_DIR + this.VOICE_DIR + sound + '.ogg') : null);
+
+		return list || (sound ? new ig.Sound(`${this.voiceBaseURL}${sound}.ogg`) : null);
 	}
-	
+
 	// If min = 1 & max = 10, generates 1-9.
 	_getRandom(min, max) {return Math.floor(Math.random() * (max - min)) + min;}
 }

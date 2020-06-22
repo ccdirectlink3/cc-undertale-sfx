@@ -1,0 +1,6 @@
+{
+  "id": "undertale-sfx",
+  "version": "0.2.0",
+  "description": "Replace the default text sound with ones from Undertale",
+  "plugin": "plugin.js"
+}
